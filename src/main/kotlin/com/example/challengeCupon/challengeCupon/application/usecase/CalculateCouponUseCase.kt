@@ -33,6 +33,17 @@ class CalculateCouponUseCase(
     }
 
     private fun validateCommand(command: CalculateCouponCommand.Command){
+
+        if (command.getItemsIds().size > 100) {
+            log.error(ErrorDescription.TOO_MANY_ITEMS.value)
+            throw BadRequestException(ErrorDescription.TOO_MANY_ITEMS.value)
+        }
+
+        if (command.getAmount() > BigDecimal("1000000")) {
+            log.error(ErrorDescription.AMOUNT_TOO_LARGE.value)
+            throw BadRequestException(ErrorDescription.AMOUNT_TOO_LARGE.value)
+        }
+
         if (command.getAmount().scale() > 2) {
             log.error(ErrorDescription.WRONG_AMOUNT.value)
             throw BadRequestException(ErrorDescription.WRONG_AMOUNT.value)
