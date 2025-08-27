@@ -1,6 +1,7 @@
 package com.example.challengeCupon.challengeCupon.adapter.out.rest
 
 import com.example.challengeCupon.challengeCupon.adapter.exception.NotAvailableException
+import com.example.challengeCupon.challengeCupon.adapter.exception.NotFoundException
 import com.example.challengeCupon.challengeCupon.adapter.out.rest.model.ItemResponseRestModel
 import com.example.challengeCupon.challengeCupon.application.port.out.GetItemsByIdsRepository
 import com.example.challengeCupon.challengeCupon.application.usecase.model.Item
@@ -14,7 +15,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
-import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 
 @Component
@@ -54,29 +55,30 @@ class GetItemsByIdsRestAdapter(
             }
 
             val responseBody: String? = response.body
-            val responseData: List<ItemResponseRestModel>?  = jacksonObjectMapper().readValue(responseBody ?: "[]")
+            val responseData: List<ItemResponseRestModel>? =
+                jacksonObjectMapper().readValue(responseBody ?: "[]")
 
-            responseData?.forEach { itemResponse ->
-                if(itemResponse.getCode() != HttpStatus.OK.value()){
-                    log.error("Item ${itemResponse.getBody()?.getId()} failed with code ${itemResponse.getCode()}")
-                    throw NotAvailableException(
-                        "Item ${itemResponse.getBody()?.getId()} not available. Error: ${itemResponse.getBody()?.getMessage()}"
+            val validItems = responseData
+                ?.filter { it.getCode() == HttpStatus.OK.value() }
+                ?.map { itemResponse ->
+                    val body = itemResponse.getBody()
+                    Item(
+                        id = body?.getId()!!,
+                        price = body.getPrice()!!,
                     )
                 }
+                ?: emptyList()
+
+            if (validItems.isEmpty()) {
+                log.error(ErrorDescription.NOT_FOUND.value + itemsIds)
+                throw NotFoundException(ErrorDescription.NOT_FOUND.value + itemsIds)
             }
 
-            return responseData?.map { itemResponse ->
-                val body = itemResponse.getBody()
-                Item(
-                    id = body?.getId()!!,
-                    price = body.getPrice()!!,
-                )
-            } ?: throw NotAvailableException("The API response came back empty.")
+            return validItems
 
-        } catch (ex: HttpClientErrorException) {
-            log.error("Mercado Libre Api service unavailable error: ", ex)
+        } catch (ex: RestClientException) {
+            log.error("Mercado Libre API service unavailable error: ", ex)
             throw NotAvailableException(ErrorDescription.UNHANDLED.value)
-
         }
     }
 

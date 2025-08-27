@@ -1,9 +1,8 @@
 package com.example.challengeCupon.challengeCupon.adapter.`in`.controller
 
-import com.example.challengeCupon.challengeCupon.adapter.model.CouponRequest
 import com.example.challengeCupon.challengeCupon.adapter.model.CouponCalculateResponse
+import com.example.challengeCupon.challengeCupon.adapter.model.CouponRequest
 import com.example.challengeCupon.challengeCupon.application.port.`in`.CalculateCouponCommand
-import com.example.challengeCupon.challengeCupon.application.port.`in`.GetStatsCommand
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping

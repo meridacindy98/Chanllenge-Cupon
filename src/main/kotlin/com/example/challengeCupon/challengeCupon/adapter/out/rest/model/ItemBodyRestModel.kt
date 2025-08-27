@@ -2,11 +2,12 @@ package com.example.challengeCupon.challengeCupon.adapter.out.rest.model
 
 import com.example.challengeCupon.challengeCupon.application.usecase.model.Item
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import java.math.BigDecimal
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 class ItemBodyRestModel(
     private var id: String,
-    private var price: Float? = null,
+    private var price: BigDecimal? = null,
 
     private var message: String? = null,
     private var error: String? = null,
@@ -17,7 +18,7 @@ class ItemBodyRestModel(
         return id
     }
 
-    fun getPrice(): Float? {
+    fun getPrice(): BigDecimal? {
         return price
     }
 

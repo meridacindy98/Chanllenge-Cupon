@@ -1,9 +1,10 @@
 package com.example.challengeCupon.challengeCupon.shared.model
 
 enum class ErrorDescription(val value: String) {
-    UNEXPECTED_ERROR("An unexpected error occurred: "),
     UNHANDLED("An unexpected error occurred."),
-    BAD_REQUEST("Bad Request."),
-    FORBIDDEN("Access to the requested resource is forbidden."),
-    NOT_FOUND("Item not found with id: "),
+    WRONG_AMOUNT("Amount must have at most two decimal places"),
+    DUPLICATE_ITEMS("Duplicate items are not allowed: "),
+    EMPTY_ITEMS("Items list must not be empty."),
+    NON_POSITIVE_AMOUNT("Amount must be greater than 0."),
+    NOT_FOUND("Not found items with ids: "),
 }

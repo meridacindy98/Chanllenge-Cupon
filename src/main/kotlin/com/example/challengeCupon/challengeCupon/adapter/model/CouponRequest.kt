@@ -4,19 +4,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import java.math.BigDecimal
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class CouponRequest(
     private var itemIds: List<String>,
-    private var amount: Float
+    private var amount: BigDecimal
 ) {
     fun getItemsIds(): List<String>{
         return itemIds
     }
 
-    fun getAmount(): Float {
+    fun getAmount(): BigDecimal {
         return amount
     }
 }
