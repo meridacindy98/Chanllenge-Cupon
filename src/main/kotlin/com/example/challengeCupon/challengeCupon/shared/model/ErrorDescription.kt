@@ -9,4 +9,6 @@ enum class ErrorDescription(val value: String) {
     NOT_FOUND("Not found items with ids: "),
     TOO_MANY_ITEMS("Too many items (max 100)"),
     AMOUNT_TOO_LARGE("Amount too large"),
+    INSUFFICIENT_AMOUNT("The amount is not enough for the items provided."),
+    BLANK_ITEM_ID("There are empty or blank item_ids."),
 }

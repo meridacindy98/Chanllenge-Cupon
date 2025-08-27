@@ -2,6 +2,7 @@ package com.example.challengeCupon.challengeCupon.shared
 
 import com.example.challengeCupon.challengeCupon.adapter.exception.BadRequestException
 import com.example.challengeCupon.challengeCupon.adapter.exception.NotFoundException
+import com.example.challengeCupon.challengeCupon.adapter.exception.UnprocessableException
 import com.example.challengeCupon.challengeCupon.shared.model.exception.ErrorResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -26,6 +27,13 @@ class GlobalExceptionHandler {
         ResponseEntity(
             ErrorResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.reasonPhrase, ex.message),
             HttpStatus.NOT_FOUND
+        )
+
+    @ExceptionHandler(UnprocessableException::class)
+    fun handleUnprocessable(ex: UnprocessableException) =
+        ResponseEntity(
+            ErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY.value(), HttpStatus.UNPROCESSABLE_ENTITY.reasonPhrase, ex.message),
+            HttpStatus.UNPROCESSABLE_ENTITY
         )
 
 }

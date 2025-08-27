@@ -1,6 +1,7 @@
 package com.example.challengeCupon.challengeCupon.application.usecase
 
 import com.example.challengeCupon.challengeCupon.adapter.exception.BadRequestException
+import com.example.challengeCupon.challengeCupon.adapter.exception.UnprocessableException
 import com.example.challengeCupon.challengeCupon.application.port.`in`.CalculateCouponCommand
 import com.example.challengeCupon.challengeCupon.application.port.out.GetItemsByIdsRepository
 import com.example.challengeCupon.challengeCupon.application.usecase.model.Choice
@@ -29,10 +30,23 @@ class CalculateCouponUseCase(
 
         val (chosenIds, total) = getAvailableItems(itemsWithPrices, coupon.getAmount())
 
+        if (chosenIds.isEmpty()) {
+            log.error("${ErrorDescription.INSUFFICIENT_AMOUNT.value}. amount=${coupon.getAmount()}")
+            throw UnprocessableException(ErrorDescription.INSUFFICIENT_AMOUNT.value)
+        }
+
         return CouponCalculate(chosenIds, total)
     }
 
     private fun validateCommand(command: CalculateCouponCommand.Command){
+
+        val blankPositions = command.getItemsIds().mapIndexedNotNull { idx, id ->
+            if (id.isBlank()) idx else null
+        }
+        if (blankPositions.isNotEmpty()) {
+            log.error(ErrorDescription.BLANK_ITEM_ID.value)
+            throw BadRequestException(ErrorDescription.BLANK_ITEM_ID.value)
+        }
 
         if (command.getItemsIds().size > 100) {
             log.error(ErrorDescription.TOO_MANY_ITEMS.value)
@@ -65,6 +79,7 @@ class CalculateCouponUseCase(
             throw BadRequestException(ErrorDescription.NON_POSITIVE_AMOUNT.value)
         }
     }
+
     private fun getItemsDuplicates(command: CalculateCouponCommand.Command): Set<String>{
         return command.getItemsIds()
             .groupingBy { it }
