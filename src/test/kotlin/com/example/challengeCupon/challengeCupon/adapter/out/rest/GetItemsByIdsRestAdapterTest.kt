@@ -1,6 +1,7 @@
 package com.example.challengeCupon.challengeCupon.adapter.out.rest
 
 import com.example.challengeCupon.challengeCupon.adapter.exception.NotAvailableException
+import com.example.challengeCupon.challengeCupon.adapter.exception.NotFoundException
 import com.example.challengeCupon.challengeCupon.adapter.out.rest.model.ItemBodyRestModel
 import com.example.challengeCupon.challengeCupon.adapter.out.rest.model.ItemResponseRestModel
 import com.example.challengeCupon.challengeCupon.application.usecase.model.Item
@@ -97,7 +98,6 @@ class GetItemsByIdsRestAdapterTest {
                     id = "MLA2",
                     message = "Item with id MLA1 not found",
                     error = "not_found",
-                    status = 404
                 )
             ),
             ItemResponseRestModel(
@@ -121,6 +121,50 @@ class GetItemsByIdsRestAdapterTest {
         assertEquals(2, result.size)
         assertEquals(Item("MLA1", BigDecimal("100.00")), result[0])
         assertEquals(Item("MLA3", BigDecimal("300.00")), result[1])
+    }
+
+    @Test
+    fun `GIVEN items ids WHEN all items has a status code error THEN throws NotAvailableException`() {
+        val mockResponse = listOf(
+            ItemResponseRestModel(
+                code = HttpStatus.FORBIDDEN.value(),
+                body = ItemBodyRestModel(
+                    id = "MLA1",
+                    message = "Access to the requested resource is forbidden",
+                    error = "access_denied",
+                )
+            ),
+            ItemResponseRestModel(
+                code = HttpStatus.NOT_FOUND.value(),
+                body = ItemBodyRestModel(
+                    id = "MLA2",
+                    message = "Item with id MLA1 not found",
+                    error = "not_found",
+                )
+            ),
+            ItemResponseRestModel(
+                code = HttpStatus.NOT_FOUND.value(),
+                body = ItemBodyRestModel(
+                    id = "MLA3",
+                    message = "Item with id MLA1 not found",
+                    error = "not_found",
+                )
+            )
+        )
+        val responseJson = jacksonObjectMapper().writeValueAsString(mockResponse)
+
+        Mockito.`when`(
+            restTemplate.exchange(
+                eq(FULL_URL),
+                eq(HttpMethod.GET),
+                any(),
+                eq(String::class.java)
+            )
+        ).thenReturn(ResponseEntity(responseJson, HttpStatus.OK))
+
+        assertThrows(NotFoundException::class.java) {
+            getItemsByIdsRestAdapter.execute(itemsIds)
+        }
     }
 
     @Test

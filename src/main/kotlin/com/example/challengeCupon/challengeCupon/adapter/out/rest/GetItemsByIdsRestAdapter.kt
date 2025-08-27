@@ -58,20 +58,25 @@ class GetItemsByIdsRestAdapter(
             val responseData: List<ItemResponseRestModel>? =
                 jacksonObjectMapper().readValue(responseBody ?: "[]")
 
-            val validItems = responseData
-                ?.filter { it.getCode() == HttpStatus.OK.value() }
-                ?.map { itemResponse ->
-                    val body = itemResponse.getBody()
-                    Item(
-                        id = body?.getId()!!,
-                        price = body.getPrice()!!,
-                    )
-                }
-                ?: emptyList()
+            val okItems = responseData?.filter { it.getCode() == HttpStatus.OK.value() } ?: emptyList()
+            val errorItems = responseData?.filter { it.getCode() != HttpStatus.OK.value() } ?: emptyList()
+
+            if (errorItems.isNotEmpty()) {
+                val notFoundIds = errorItems.map { it.getBody()!!.getId() }
+                log.error("${ErrorDescription.NOT_FOUND.value}: $notFoundIds")
+            }
+
+            val validItems = okItems.map { itemResponse ->
+                val body = itemResponse.getBody()!!
+                Item(
+                    id = body.getId(),
+                    price = body.getPrice()!!
+                )
+            }
 
             if (validItems.isEmpty()) {
-                log.error(ErrorDescription.NOT_FOUND.value + itemsIds)
-                throw NotFoundException(ErrorDescription.NOT_FOUND.value + itemsIds)
+                log.error("${ErrorDescription.NOT_FOUND.value}: $itemsIds")
+                throw NotFoundException("${ErrorDescription.NOT_FOUND.value}: $itemsIds")
             }
 
             return validItems

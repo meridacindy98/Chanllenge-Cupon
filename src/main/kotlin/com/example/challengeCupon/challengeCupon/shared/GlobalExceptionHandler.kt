@@ -2,7 +2,6 @@ package com.example.challengeCupon.challengeCupon.shared
 
 import com.example.challengeCupon.challengeCupon.adapter.exception.BadRequestException
 import com.example.challengeCupon.challengeCupon.adapter.exception.NotFoundException
-import com.example.challengeCupon.challengeCupon.adapter.exception.UnauthorizedException
 import com.example.challengeCupon.challengeCupon.shared.model.exception.ErrorResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus

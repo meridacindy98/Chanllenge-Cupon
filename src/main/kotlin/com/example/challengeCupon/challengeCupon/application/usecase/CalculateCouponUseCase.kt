@@ -8,6 +8,7 @@ import com.example.challengeCupon.challengeCupon.application.usecase.model.Coupo
 import com.example.challengeCupon.challengeCupon.application.usecase.model.CouponCalculate
 import com.example.challengeCupon.challengeCupon.application.usecase.model.Item
 import com.example.challengeCupon.challengeCupon.shared.model.ErrorDescription
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -17,6 +18,8 @@ class CalculateCouponUseCase(
     private val getItemsByIdsRepository: GetItemsByIdsRepository
 ): CalculateCouponCommand {
 
+    private val log = LoggerFactory.getLogger(this::class.java)
+
     override fun execute(command: CalculateCouponCommand.Command): CouponCalculate {
         validateCommand(command)
 
@@ -24,26 +27,30 @@ class CalculateCouponUseCase(
 
         val itemsWithPrices = getItemsByIdsRepository.execute(coupon.getItemsIds())
 
-        val (chosenIds, total) = knapsackMax(itemsWithPrices, coupon.getAmount())
+        val (chosenIds, total) = getAvailableItems(itemsWithPrices, coupon.getAmount())
 
         return CouponCalculate(chosenIds, total)
     }
 
     private fun validateCommand(command: CalculateCouponCommand.Command){
         if (command.getAmount().scale() > 2) {
+            log.error(ErrorDescription.WRONG_AMOUNT.value)
             throw BadRequestException(ErrorDescription.WRONG_AMOUNT.value)
         }
 
         if (command.getItemsIds().isEmpty()) {
+            log.error(ErrorDescription.EMPTY_ITEMS.value)
             throw BadRequestException(ErrorDescription.EMPTY_ITEMS.value)
         }
 
         val itemsDuplicates = getItemsDuplicates(command)
         if (itemsDuplicates.isNotEmpty()) {
-            throw BadRequestException(ErrorDescription.DUPLICATE_ITEMS.value + ": $itemsDuplicates")
+            log.error(ErrorDescription.DUPLICATE_ITEMS.value + itemsDuplicates)
+            throw BadRequestException(ErrorDescription.DUPLICATE_ITEMS.value + itemsDuplicates)
         }
 
         if (command.getAmount() <= BigDecimal.ZERO) {
+            log.error(ErrorDescription.NON_POSITIVE_AMOUNT.value)
             throw BadRequestException(ErrorDescription.NON_POSITIVE_AMOUNT.value)
         }
     }
@@ -72,7 +79,7 @@ class CalculateCouponUseCase(
             .movePointLeft(2)
             .setScale(2, RoundingMode.UNNECESSARY)
 
-    private fun knapsackMax(items: List<Item>, amount: BigDecimal): Pair<List<String>, BigDecimal> {
+    private fun getAvailableItems(items: List<Item>, amount: BigDecimal): Pair<List<String>, BigDecimal> {
         val maxAmountInCents = toCents(amount)
         if (maxAmountInCents <= 0L || items.isEmpty()) return emptyList<String>() to BigDecimal.ZERO
 

@@ -11,7 +11,6 @@ class ItemBodyRestModel(
 
     private var message: String? = null,
     private var error: String? = null,
-    private var status: Int? = null,
 ) {
 
     fun getId(): String {
@@ -28,10 +27,6 @@ class ItemBodyRestModel(
 
     fun getError(): String? {
         return error
-    }
-
-    fun getStatus(): Int? {
-        return status
     }
 
     fun toDomain(): Item {
