@@ -51,7 +51,7 @@ class CalculateCouponUseCaseTest {
 
         val result = calculateCouponUseCase.execute(command)
 
-        assertEquals(listOf("MLA4","MLA5","MLA1","MLA2"), result.getItemsIds())
+        assertEquals(listOf("MLA1","MLA2","MLA4","MLA5"), result.getItemsIds())
         assertEquals(BigDecimal("480.00"), result.getTotal())
     }
 
