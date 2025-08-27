@@ -21,7 +21,7 @@ class CouponController(
     fun calculateCoupon(@RequestBody body: CouponRequest): ResponseEntity<CouponCalculateResponse?> {
         val couponCalculate = calculateCouponCommand.execute(buildCalculateCouponCommand(body))
         val couponCalculateResponse = CouponCalculateResponse.fromDomain(couponCalculate)
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(couponCalculateResponse)
+        return ResponseEntity.status(HttpStatus.OK).body(couponCalculateResponse)
     }
 
     private fun buildCalculateCouponCommand(body: CouponRequest): CalculateCouponCommand.Command {
