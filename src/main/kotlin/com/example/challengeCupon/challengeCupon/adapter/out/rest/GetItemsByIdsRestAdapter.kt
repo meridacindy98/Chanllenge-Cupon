@@ -79,6 +79,8 @@ class GetItemsByIdsRestAdapter(
                 throw NotFoundException("${ErrorDescription.NOT_FOUND.value}: $itemsIds")
             }
 
+            log.info("Items got: $validItems")
+
             return validItems
 
         } catch (ex: RestClientException) {

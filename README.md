@@ -89,9 +89,12 @@ POST → https://couponchallenge-96e0308989c0.herokuapp.com/coupon/
 ```
 
 ## Aclaraciones
-Para acceder a la API de Mercado Libre necesito generar un token que este solo vive por 6 horas
+* Para acceder a la API de Mercado Libre necesito generar un token que este solo vive por 6 horas
 esta misma se encuentra declarada como variable de entorno
-
-
-
+* Consumiendo la API de Mecado Libre solo puse acceder a items que yo publique dejo un listado
+de cuales son con sus respectivos precios
+  * MLA1308307288 -> 15000
+  * MLA913343169 -> 14000
+  * MLA1517572823 -> 13500
+  * MLA1517482175 -> 19000
 

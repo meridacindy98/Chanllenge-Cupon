@@ -40,48 +40,53 @@ class CalculateCouponUseCase(
 
     private fun validateCommand(command: CalculateCouponCommand.Command){
 
-        val blankPositions = command.getItemsIds().mapIndexedNotNull { idx, id ->
-            if (id.isBlank()) idx else null
-        }
-        if (blankPositions.isNotEmpty()) {
-            log.error(ErrorDescription.BLANK_ITEM_ID.value)
-            throw BadRequestException(ErrorDescription.BLANK_ITEM_ID.value)
-        }
-
-        if (command.getItemsIds().size > 100) {
-            log.error(ErrorDescription.TOO_MANY_ITEMS.value)
-            throw BadRequestException(ErrorDescription.TOO_MANY_ITEMS.value)
-        }
-
-        if (command.getAmount() > BigDecimal("1000000")) {
-            log.error(ErrorDescription.AMOUNT_TOO_LARGE.value)
-            throw BadRequestException(ErrorDescription.AMOUNT_TOO_LARGE.value)
-        }
-
-        if (command.getAmount().scale() > 2) {
-            log.error(ErrorDescription.WRONG_AMOUNT.value)
-            throw BadRequestException(ErrorDescription.WRONG_AMOUNT.value)
-        }
-
-        if (command.getItemsIds().isEmpty()) {
-            log.error(ErrorDescription.EMPTY_ITEMS.value)
-            throw BadRequestException(ErrorDescription.EMPTY_ITEMS.value)
-        }
-
+        val items = command.getItemsIds().map { it.trim() }
+        val amount = command.getAmount().stripTrailingZeros()
         val itemsDuplicates = getItemsDuplicates(command)
-        if (itemsDuplicates.isNotEmpty()) {
-            log.error(ErrorDescription.DUPLICATE_ITEMS.value + itemsDuplicates)
-            throw BadRequestException(ErrorDescription.DUPLICATE_ITEMS.value + itemsDuplicates)
+
+        when {
+            items.isEmpty() -> {
+                log.error(ErrorDescription.EMPTY_ITEMS.value)
+                throw BadRequestException(ErrorDescription.EMPTY_ITEMS.value)
+            }
+
+            items.any { it.isBlank() } -> {
+                log.error(ErrorDescription.BLANK_ITEM_ID.value)
+                throw BadRequestException(ErrorDescription.BLANK_ITEM_ID.value)
+            }
+
+            items.size > 100 -> {
+                log.error(ErrorDescription.TOO_MANY_ITEMS.value)
+                throw BadRequestException(ErrorDescription.TOO_MANY_ITEMS.value)
+            }
+
+            amount.scale() > 2 -> {
+                log.error(ErrorDescription.WRONG_AMOUNT.value)
+                throw BadRequestException(ErrorDescription.WRONG_AMOUNT.value)
+            }
+
+            amount > BigDecimal("1000000") -> {
+                log.error(ErrorDescription.AMOUNT_TOO_LARGE.value)
+                throw BadRequestException(ErrorDescription.AMOUNT_TOO_LARGE.value)
+            }
+
+            amount <= BigDecimal("0") -> {
+                log.error(ErrorDescription.NON_POSITIVE_AMOUNT.value)
+                throw BadRequestException(ErrorDescription.NON_POSITIVE_AMOUNT.value)
+            }
+
+            itemsDuplicates.isNotEmpty() -> {
+                log.error(ErrorDescription.DUPLICATE_ITEMS.value + itemsDuplicates)
+                throw BadRequestException(ErrorDescription.DUPLICATE_ITEMS.value + itemsDuplicates)
+            }
         }
 
-        if (command.getAmount() <= BigDecimal.ZERO) {
-            log.error(ErrorDescription.NON_POSITIVE_AMOUNT.value)
-            throw BadRequestException(ErrorDescription.NON_POSITIVE_AMOUNT.value)
-        }
     }
+
 
     private fun getItemsDuplicates(command: CalculateCouponCommand.Command): Set<String>{
         return command.getItemsIds()
+            .map { it.trim() }
             .groupingBy { it }
             .eachCount()
             .filter { it.value > 1 }
